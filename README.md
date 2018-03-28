@@ -1,21 +1,15 @@
-# Language
+# Panacea
 
-**TODO: Add description**
+A code golf language based off Elixir
+
+## [Documentation](https://github.com/okx-code/Panacea/wiki)
 
 ## Installation
 
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed
-by adding `language` to your list of dependencies in `mix.exs`:
+To compile, run
 
-```elixir
-def deps do
-  [
-    {:language, "~> 0.1.0"}
-  ]
-end
-```
+    mix escript.build
 
-Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
-and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
-be found at [https://hexdocs.pm/language](https://hexdocs.pm/language).
+then, to run:
 
+    ./language
