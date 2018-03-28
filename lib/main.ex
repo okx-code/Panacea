@@ -6,7 +6,7 @@ defmodule Main do
       length(args) >= 1 ->
         functions = read_lines(File.read!(hd(args)))
         inputs = read_lines(IO.read(:all))
-        stack = eval([], functions, 0, {inputs, 0})
+        stack = eval([], functions, 0, Stream.cycle(inputs))
 
         IO.inspect(case args do
           [_, "-t"] -> hd(stack)

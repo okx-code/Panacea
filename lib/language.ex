@@ -57,7 +57,7 @@ defmodule Atoms do
         end
         # subtract
         "-" -> fn
-          a, b when is_number(a) and is_number(b) -> a + b
+          a, b when is_number(a) and is_number(b) -> a - b
           a, b when is_list(a) and is_list(b) -> [a -- b]
         end
         "*" -> fn
@@ -85,8 +85,8 @@ defmodule Atoms do
         end
         # inputs
         "_" -> fn ->
-          {_, input} = next_input(inputs);
-          [convert input]
+          {inputs, input} = next_input(inputs);
+          {inputs, [convert input]}
         end
         "[" -> fn -> [convert(Enum.at(inputs, 0))] end
         "]" -> fn -> [convert(Enum.at(inputs, 1))] end

@@ -1,9 +1,11 @@
 defmodule Stack do
-    def next_input({inputs, index}) do
-      {{inputs, rem(index + 1, length(inputs))}, Enum.at(inputs, index)}
+    def next_input(inputs) do
+      {Stream.drop(inputs, 1), hd(Enum.take(inputs, 1))}
     end
 
     def convert(i) do
+      if !is_binary(i), do: i
+
       i = to_int(i)
       if is_integer(i) do
         i
@@ -54,18 +56,19 @@ defmodule Stack do
     def run(inputs1, stack1, fun) do
       result = case :erlang.fun_info(fun)[:arity] do
         0 ->
-          {to_list(fun.()), stack1, inputs1}
+          {fun.(), stack1, inputs1}
         1 ->
           {elem, stack, inputs} = pop(stack1, inputs1)
-          {to_list(fun.(elem)), stack, inputs}
+          {fun.(elem), stack, inputs}
         2 ->
           {a, stack, inputs} = pop(stack1, inputs1)
           {b, stack, inputs} = pop(stack, inputs)
-          {to_list(fun.(a, b)), stack, inputs}
+          {fun.(a, b), stack, inputs}
       end
 
       case result do
-        {res, stack, inputs} -> {res ++ stack, inputs}
+        {{inputs, res}, stack, _} -> {res ++ stack, inputs}
+        {res, stack, inputs} -> {to_list(res) ++ stack, inputs}
       end
     end
 
