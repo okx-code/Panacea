@@ -1,4 +1,8 @@
 defmodule Stack do
+    def next_input({inputs, index}) do
+      {{inputs, rem(index + 1, length(inputs))}, Enum.at(inputs, index)}
+    end
+
     def convert(i) do
       i = to_int(i)
       if is_integer(i) do
@@ -32,27 +36,36 @@ defmodule Stack do
     defp to_list(a) when is_list(a), do: a
     defp to_list(a), do: [a]
 
-    def pop(stack, default) do
+    def pop(stack, inputs) do
       if length(stack) == 0 do
-        {convert(default), stack}
+        {inputs, input} = next_input(inputs);
+        {convert(input), stack, inputs}
       else
-        List.pop_at(stack, 0)
+        {elem, ins} = List.pop_at(stack, 0)
+        {elem, stack, ins}
       end
     end
     def peek(stack, _) when length(stack) > 0, do: hd(stack)
-    def peek(_, default), do: convert(default)
+    def peek(_, inputs) do
+      {_, input} = next_input(inputs);
+      [convert input]
+    end
 
-    def run(default, stack, fun) do
-      case :erlang.fun_info(fun)[:arity] do
+    def run(inputs1, stack1, fun) do
+      result = case :erlang.fun_info(fun)[:arity] do
         0 ->
-          to_list(fun.()) ++ stack
+          {to_list(fun.()), stack1, inputs1}
         1 ->
-          {elem, stack} = pop(stack, default)
-          to_list(fun.(elem)) ++ stack
+          {elem, stack, inputs} = pop(stack1, inputs1)
+          {to_list(fun.(elem)), stack, inputs}
         2 ->
-          {a, stack} = pop(stack, default)
-          {b, stack} = pop(stack, default)
-          to_list(fun.(a, b)) ++ stack
+          {a, stack, inputs} = pop(stack1, inputs1)
+          {b, stack, inputs} = pop(stack, inputs)
+          {to_list(fun.(a, b)), stack, inputs}
+      end
+
+      case result do
+        {res, stack, inputs} -> {res ++ stack, inputs}
       end
     end
 

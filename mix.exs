@@ -1,10 +1,10 @@
-defmodule Language.MixProject do
+defmodule Panacea.MixProject do
   use Mix.Project
 
   def project do
     [
       mod: {Main, []},
-      app: :language,
+      app: :panacea,
       version: "0.1.0",
       elixir: "~> 1.6",
       start_permanent: Mix.env() == :prod,
