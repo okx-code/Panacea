@@ -1,24 +1,27 @@
 defmodule Stack do
     def next_input(inputs) do
-      {Stream.drop(inputs, 1), hd(Enum.take(inputs, 1))}
+      {Stream.drop(inputs, 1), Enum.at(inputs, 0)}
     end
 
     def convert(i) do
-      if !is_binary(i), do: i
-
-      i = to_int(i)
-      if is_integer(i) do
+      if !is_binary(i) || i == nil do
         i
       else
-        i = to_float(i)
-        if is_float(i) do
+        i = to_int(i)
+        if is_integer(i) do
           i
         else
-          case Code.eval_string(i) do
-            {v, _} -> v
+          i = to_float(i)
+          if is_float(i) do
+            i
+          else
+            case Code.eval_string(inspect(i)) do
+              {v, _} -> v
+            end
           end
         end
       end
+
     end
 
     defp to_int(n) do
@@ -43,14 +46,13 @@ defmodule Stack do
         {inputs, input} = next_input(inputs);
         {convert(input), stack, inputs}
       else
-        {elem, ins} = List.pop_at(stack, 0)
-        {elem, stack, ins}
+        {elem, stack} = List.pop_at(stack, 0)
+        {elem, stack, inputs}
       end
     end
-    def peek(stack, _) when length(stack) > 0, do: hd(stack)
-    def peek(_, inputs) do
-      {_, input} = next_input(inputs);
-      [convert input]
+    def peek(stack, inputs) when length(stack) > 0, do: {inputs, hd(stack)}
+    def peek(_stack, inputs) do
+      {Stream.drop(inputs, 1), convert(Enum.at(inputs, 0))}
     end
 
     def run(inputs1, stack1, fun) do

@@ -6,7 +6,7 @@ defmodule Main do
       length(args) >= 1 ->
         functions = read_lines(File.read!(hd(args)))
         inputs = read_lines(IO.read(:all))
-        stack = eval([], functions, 0, Stream.cycle(inputs))
+        stack = eval([], functions, 0, inputs)
 
         IO.inspect(case args do
           [_, "-t"] -> hd(stack)
@@ -23,5 +23,11 @@ defmodule Main do
     end
   end
 
-  def read_lines(x), do: String.replace_trailing(x, "\n", "") |> String.split("\n")
+  def read_lines(x) do
+    x
+    |> String.split("\n")
+    |> Enum.reverse
+    |> tl
+    |> Enum.reverse
+  end
 end

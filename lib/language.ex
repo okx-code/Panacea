@@ -2,13 +2,14 @@ defmodule Atoms do
   import Stack
 
   def eval(stack, functions, index, inputs) do
+    # debug(Enum.to_list(inputs), "inputs")
+
     Enum.at(functions, index)
     |> String.replace(~r/\d{2}/, "\\0j")
     |> String.replace(~r/j\d/, "\\0j")
     |> String.graphemes
     |> Enum.reduce({stack, inputs}, fn(n, {stack, inputs}) ->
-      top = peek(stack, inputs)
-      IO.inspect top
+      {_, top} = peek(stack, inputs)
 
       debug(stack, "stack")
       debug(n, "current")
@@ -81,7 +82,7 @@ defmodule Atoms do
           a, b when is_number(a) and is_number(b) -> Maths.pow(a,b)
           a, b when is_list(a) and is_list(b) ->
             [Enum.zip(a, b)
-            |> Enum.map(fn {x, y} -> Math.pow(x, y) end)]
+            |> Enum.map(fn {x, y} -> Maths.pow(x, y) end)]
         end
 
         # divide
@@ -97,7 +98,7 @@ defmodule Atoms do
         "i" when is_binary(top) -> &String.to_integer/1
         "i" when is_number(top) -> &to_string/1
         "I" when is_binary(top) -> &String.to_float/1
-        "I" when is_number(top) -> fn n -> String.length(to_string(n))
+        "I" when is_number(top) -> fn n -> String.length(to_string(n)) end
         "I" when is_list(top) -> &length/1
 
         n when is_digit(n) -> fn -> String.to_integer(n) end
