@@ -22,6 +22,8 @@ defmodule Atoms do
         "P" when is_binary(top) -> fn n -> IO.puts(n); [] end
         "P" when is_list(top) -> fn n -> elem(List.pop_at(n, 0), 1) end
 
+        "o" when is_number(top) -> fn n -> <<n>>; end
+
         # dup
         "D" -> fn a -> [a, a] end
         "d" -> fn a, b -> [List.duplicate(a, b)] end

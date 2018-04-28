@@ -9,9 +9,10 @@ defmodule Main do
         stack = eval([], functions, 0, inputs)
 
         IO.inspect(case args do
-          [_, "-t"] -> hd(stack)
+          [_, "-t"] -> Enum.at(stack, 0)
           [_, "-j"] -> Enum.join(stack)
-          [_] ->  stack
+          [_, "-o"] -> System.halt(0)
+          [_] -> stack
         end, charlists: :as_lists, width: :infinity, limit: :infinity)
       true ->
         IO.write """
@@ -19,6 +20,7 @@ defmodule Main do
         Options:
           -t: Print top of stack instead of entire stack
           -j: Join stack together at end
+          -o: Don't print the stack
         """
     end
   end
