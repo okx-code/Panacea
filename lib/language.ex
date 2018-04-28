@@ -30,6 +30,7 @@ defmodule Atoms do
         # ceil/chunk
         "C" when is_number(top) -> fn n -> round(Float.ceil(n)) end
         "C" when is_list(top) -> fn a, b -> [Enum.chunk_every(a, b)] end
+        "c" when is_number(top) -> fn n -> round(Float.floor(n)) end
         "c" when is_list(top) -> fn a, b -> [Enum.chunk_every(a, b, b, :discard)] end
         # increment/decrement
         ">" when is_number(top) -> fn n -> n + 1 end
@@ -53,6 +54,15 @@ defmodule Atoms do
         "a" -> fn x -> Enum.any?(x, fn y -> hd(eval([y], functions, index + 1, inputs)) end) end
         # filter
         "f" -> fn x -> [Enum.filter(x, fn y -> hd(eval([y], functions, index + 1, inputs)) end)] end
+        # nth that matches
+        "n" -> fn x ->
+          Stream.iterate(0, &(&1 + 1))
+          |> Stream.filter(fn y -> hd(eval([y], functions, index + 1, inputs)) end)
+          |> Enum.at(x) end
+        "N" -> fn x ->
+          Stream.iterate(1, &(&1 + 1)) 
+          |> Stream.filter(fn y -> hd(eval([y], functions, index + 1, inputs)) end)
+          |> Enum.at(x) end
         # sum
         "s" when is_list(top) -> fn a -> Enum.sum a end
         "s" when is_integer(top) -> fn n -> Integer.digits(n) |> Enum.sum end
@@ -62,6 +72,8 @@ defmodule Atoms do
         # equal
         "=" -> fn a, b -> a==b end
         ":" -> fn a, b -> a===b end
+        #sqrt
+        "q" when is_number(top) -> fn n -> :math.sqrt(n) end
         # add
         "+" -> fn
           a, b when is_number(a) and is_number(b) -> a + b
@@ -94,6 +106,10 @@ defmodule Atoms do
             [Enum.zip(a, b)
             |> Enum.map(fn {x, y} -> x / y end)]
         end
+
+        "{" when is_number(top) -> fn n -> rem(n, 2) == 0 end
+        "}" when is_number(top) -> fn n -> rem(n, 2) == 1 end
+
         # join digit
         "j" -> fn a, b -> b * 10 + a end
         # convert (str -> int) or (int -> str)
