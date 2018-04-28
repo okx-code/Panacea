@@ -13,6 +13,14 @@ defmodule Atoms do
       debug(stack, "stack")
       debug(n, "current")
       run(inputs, stack, case n do
+        # print
+        "p" when is_number(top) -> fn n -> IO.write(<<n>>); [] end
+        "p" when is_binary(top) -> fn n -> IO.write(n); [] end
+        "p" -> fn n -> IO.inspect(n); [] end
+        "P" when is_number(top) -> fn n -> IO.write(n); [] end
+        "P" when is_binary(top) -> fn n -> IO.puts(n); [] end
+        "P" when is_list(top) -> fn n -> elem(List.pop_at(n, 0), 1) end
+
         # dup
         "D" -> fn a -> [a, a] end
         "d" -> fn a, b -> [List.duplicate(a, b)] end
@@ -45,10 +53,12 @@ defmodule Atoms do
         # sum
         "s" when is_list(top) -> fn a -> Enum.sum a end
         "s" when is_integer(top) -> fn n -> Integer.digits(n) |> Enum.sum end
-        # not
+        # bool
         "!" -> fn x -> !x end
+        "?" -> fn x -> !!x end
         # equal
         "=" -> fn a, b -> a==b end
+        ":" -> fn a, b -> a===b end
         # add
         "+" -> fn
           a, b when is_number(a) and is_number(b) -> a + b
@@ -60,15 +70,26 @@ defmodule Atoms do
           a, b when is_number(a) and is_number(b) -> a - b
           a, b when is_list(a) and is_list(b) -> [a -- b]
         end
+        # multiply
         "*" -> fn
           a, b when is_number(a) and is_number(b) -> a * b
           a, b when is_list(a) and is_list(b) ->
             [Enum.zip(a, b)
             |> Enum.map(fn {x, y} -> x * y end)]
         end
+        "^" -> fn
+          a, b when is_number(a) and is_number(b) -> Maths.pow(a,b)
+          a, b when is_list(a) and is_list(b) ->
+            [Enum.zip(a, b)
+            |> Enum.map(fn {x, y} -> Math.pow(x, y) end)]
+        end
+
         # divide
         "/" -> fn
           a, b when is_number(a) and is_number(b) -> a / b
+          a, b when is_list(a) and is_list(b) ->
+            [Enum.zip(a, b)
+            |> Enum.map(fn {x, y} -> x / y end)]
         end
         # join digit
         "j" -> fn a, b -> b * 10 + a end
@@ -76,13 +97,10 @@ defmodule Atoms do
         "i" when is_binary(top) -> &String.to_integer/1
         "i" when is_number(top) -> &to_string/1
         "I" when is_binary(top) -> &String.to_float/1
+        "I" when is_number(top) -> fn n -> String.length(to_string(n))
         "I" when is_list(top) -> &length/1
 
-        n when is_digit(n) -> fn ->
-          case Integer.parse(n) do
-            {num, _} -> num
-          end
-        end
+        n when is_digit(n) -> fn -> String.to_integer(n) end
         # inputs
         "_" -> fn ->
           {inputs, input} = next_input(inputs);
@@ -90,7 +108,7 @@ defmodule Atoms do
         end
         "[" -> fn -> [convert(Enum.at(inputs, 0))] end
         "]" -> fn -> [convert(Enum.at(inputs, 1))] end
-        "E" -> fn s -> case Code.eval_string(s) do {v, _} -> v end end
+        "E" -> fn s -> case Code.eval_string(s, __ENV__) do {v, _} -> v end end
         " " -> fn -> [] end
       end)
     end)
