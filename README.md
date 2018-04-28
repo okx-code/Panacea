@@ -16,4 +16,6 @@ To disable debug message compile with:
 
 then, to run:
 
-    ./language
+    ./panacea <file>
+
+When running a program, Panacea will read input until it receives an end of input signal regardless of whether the code actually requires input.
