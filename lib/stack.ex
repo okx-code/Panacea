@@ -15,8 +15,8 @@ defmodule Stack do
           if is_float(i) do
             i
           else
-            case Code.eval_string(inspect(i)) do
-              {v, _} -> v
+            case Code.eval_string(i) do
+              {v, _ } -> v
             end
           end
         end
@@ -26,15 +26,15 @@ defmodule Stack do
 
     defp to_int(n) do
       case Integer.parse(n) do
-        :error -> n
         {num, ""} -> num
+        _ -> n
       end
     end
 
     defp to_float(n) do
       case Float.parse(n) do
-        :error -> n
         {num, ""} -> num
+        _ -> n
       end
     end
 
