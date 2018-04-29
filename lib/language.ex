@@ -29,9 +29,11 @@ defmodule Atoms do
         # proper divisors
         "v" when is_number(top) -> &([Maths.divisors(&1)])
         "v" when is_binary(top) -> &String.capitalize/1
+        "v" when is_list(top) -> &Enum.join/1
         # divisors
         "V" when is_number(top) -> &([Maths.divisors(&1) ++ [&1]])
         "V" when is_binary(top) -> &String.split/1
+        "V" when is_list(top) -> &(Enum.join(&1, " "))
 
         # dup
         "D" -> fn a -> [a, a] end
