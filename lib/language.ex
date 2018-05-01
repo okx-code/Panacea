@@ -37,7 +37,6 @@ defmodule Atoms do
 
         # dup
         "D" -> fn a -> [a, a] end
-        "d" -> fn a, b -> [List.duplicate(a, b)] end
         "G" -> fn a, b -> [b, a] end
          # ceil/chunk
         "C" when is_number(top) -> fn n -> round(Float.ceil(n)) end
@@ -133,11 +132,28 @@ defmodule Atoms do
             |> Enum.map(fn {x, y} -> x / y end)]
         end
 
-        "{" when is_number(top) -> fn n -> rem(n, 2) == 0 end
-        "}" when is_number(top) -> fn n -> rem(n, 2) == 1 end
+        "{" -> fn
+          n when is_number(n) -> rem(n, 2) == 0
+          n when is_binary(n) -> rem(String.length(n), 2) == 0
+          n when is_list(n) -> rem(length(n), 2) == 0
+        end
+        "}" when is_number(top) -> fn
+          n when is_number(n) -> rem(n, 2) == 1
+          n when is_binary(n) -> rem(String.length(n), 2) == 1
+          n when is_list(n) -> rem(length(n), 2) == 1
+        end
+        "$" -> &is_number/1
+        "\\" -> &is_list/1
+        "~" -> &is_binary/1
 
         # join digit
-        "j" -> fn a, b -> b * 10 + a end
+        "j" -> fn
+          a, b when is_number(a) and is_number(b) -> b * 10 + a
+          a, b when is_binary(a) and is_number(b) -> String.duplicate(a, b)
+          a, b when is_number(a) and is_binary(b) -> String.duplicate(b, a)
+          a, b when is_list(a) and is_number(b) -> [List.duplicate(a, b)]
+          a, b when is_number(a) and is_list(b) -> [List.duplicate(b, a)]
+         end
         # convert (str -> int) or (int -> str)
         "i" when is_binary(top) -> &String.to_integer/1
         "i" when is_number(top) -> &to_string/1

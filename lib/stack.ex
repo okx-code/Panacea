@@ -15,8 +15,10 @@ defmodule Stack do
           if is_float(i) do
             i
           else
-            case Code.eval_string(i) do
-              {v, _ } -> v
+            try do
+              elem(Code.eval_string(i, :"warnings-as-errors"), 0)
+            rescue
+              _ -> i
             end
           end
         end
