@@ -37,6 +37,7 @@ defmodule Atoms do
 
         # dup
         "D" -> fn a -> [a, a] end
+        # rev
         "G" -> fn a, b -> [b, a] end
          # ceil/chunk
         "C" when is_number(top) -> fn n -> round(Float.ceil(n)) end
@@ -76,12 +77,14 @@ defmodule Atoms do
           Stream.iterate(1, &(&1 + 1))
           |> Stream.filter(fn y -> hd(eval([y], functions, index + 1, inputs)) end)
           |> Enum.at(x) end
-        # run and swap
+        # run and swap with input and top of stack
         "u" -> fn x -> [x] ++ [convert(Enum.at(inputs, 0))] ++ [hd(eval([x], functions, index + 1, inputs))] end
         # sum
-        "s" when is_list(top) -> fn a -> Enum.sum(a) end
-        "s" when is_integer(top) -> fn n -> Integer.digits(n) |> Enum.sum end
-        "s" when is_binary(top) -> &String.reverse/1
+        "s" -> fn
+          n when is_list(n) -> Enum.sum(n)
+          n when is_integer(n) -> Integer.digits(Enum.sum(n))
+          n when is_binary(n) -> String.reverse(n)
+        end
         # bool
         "!" -> fn x -> !x end
         "?" -> fn x -> !!x end
@@ -130,6 +133,11 @@ defmodule Atoms do
           a, b when is_list(a) and is_list(b) ->
             [Enum.zip(a, b)
             |> Enum.map(fn {x, y} -> x / y end)]
+        end
+
+        # prime
+        "m" -> fn
+          n when is_number(n) -> length(Maths.divisors(n)) == 1
         end
 
         "{" -> fn
