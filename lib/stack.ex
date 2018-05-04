@@ -16,7 +16,7 @@ defmodule Stack do
             i
           else
             try do
-              elem(Code.eval_string(i, :"warnings-as-errors"), 0)
+              elem(Code.eval_string(i, [], __ENV__), 0)
             rescue
               _ -> i
             end
