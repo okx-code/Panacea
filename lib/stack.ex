@@ -83,4 +83,13 @@ defmodule Stack do
       [Stream.iterate(s, &dextend/1)
       |> Enum.take(String.length(s))]
     end
+
+    def while_unchanging(last, fun) do
+      next = fun.(last)
+      if last == next do
+        last
+      else
+        while_unchanging(next, fun)
+      end
+    end
 end

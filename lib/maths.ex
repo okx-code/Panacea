@@ -15,4 +15,7 @@ defmodule Maths do
   defp divisors(k,n,q) when rem(n,k)>0, do: divisors(k+1,n,q)
   defp divisors(k,n,q) when k * k == n, do: [k | divisors(k+1,n,q)]
   defp divisors(k,n,q)                , do: [k,div(n,k) | divisors(k+1,n,q)]
+
+  def product([]), do: 1
+  def product([hd | tl]), do: hd * product(tl)
 end
