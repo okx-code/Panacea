@@ -18,4 +18,10 @@ defmodule Maths do
 
   def product([]), do: 1
   def product([hd | tl]), do: hd * product(tl)
+
+  def decomposition(n), do: decomposition(n, 2, [])
+
+  defp decomposition(n, k, acc) when n < k*k, do: Enum.reverse(acc, [n])
+  defp decomposition(n, k, acc) when rem(n, k) == 0, do: decomposition(div(n, k), k, [k | acc])
+  defp decomposition(n, k, acc), do: decomposition(n, k+1, acc)
 end

@@ -159,6 +159,9 @@ defmodule Atoms do
         "m" -> fn
           n when is_number(n) -> length(Maths.divisors(n)) == 1
         end
+        "z" -> fn
+          n when is_number(n) -> [Maths.decomposition(n)]
+        end
 
         "{" -> fn
           n when is_number(n) -> rem(n, 2) == 0
