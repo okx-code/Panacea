@@ -21,10 +21,12 @@ defmodule Atoms do
         "P" when is_number(top) -> fn n -> IO.write(n); [] end
         "P" when is_binary(top) -> fn n -> IO.puts(n); [] end
         "P" when is_list(top) -> fn n -> elem(List.pop_at(n, 0), 1) end
-        "o" when is_number(top) -> fn n -> <<n>>; end
 
-        # uniqify
-        "o" when is_list(top) -> fn n -> [Enum.uniq(n)] end
+        "o" -> fn
+           n when is_number(top) -> <<n>>
+           n when is_list(top) -> [Enum.uniq(n)]
+           n when is_binary(top) -> dextend_sequence(String.reverse(n))
+         end
 
         # proper divisors
         "v" when is_number(top) -> &([Maths.divisors(&1)])
@@ -108,7 +110,7 @@ defmodule Atoms do
         # sqrt
         "q" -> fn
           n when is_number(n) -> :math.sqrt(n)
-          n when is_list(n) -> tl(n)
+          n when is_list(n) -> [tl(n)]
           n when is_binary(n) -> String.slice(n, 1..-1)
         end
         # add
@@ -119,7 +121,9 @@ defmodule Atoms do
           a, b when is_list(a) and is_list(b) -> [a ++ b]
           a, b when is_number(a) and is_number(b) -> a + b
           a, b when is_list(a) and is_number(b) -> [Enum.map(a, &(&1 + b))]
+          a, b when is_list(a) -> [[b] ++ a]
           a, b when is_number(a) and is_list(b) -> [Enum.map(b, &(&1 + a))]
+          a, b when is_list(b) -> [b ++ [a]]
         end
         # subtract
         "-" -> fn
@@ -132,8 +136,14 @@ defmodule Atoms do
         "*" -> fn
           a, b when is_number(a) and is_number(b) -> a * b
           a, b when is_list(a) and is_list(b) ->
-            [Enum.zip(a, b)
-            |> Enum.map(fn {x, y} -> x * y end)]
+            case list_type(a) do
+              :number ->
+                [Enum.zip(a, b)
+                |> Enum.map(fn {x, y} -> x * y end)]
+              :binary ->
+                [Enum.zip(a, b)
+                |> Enum.map(fn {x, y} -> x <> y end)]
+            end
           a, b when is_list(a) and is_number(b) -> [Enum.map(a, &(&1 * b))]
           a, b when is_number(a) and is_list(b) -> [Enum.map(b, &(&1 * a))]
         end

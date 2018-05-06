@@ -92,4 +92,15 @@ defmodule Stack do
         while_unchanging(next, fun)
       end
     end
+
+    def list_type(list) do
+      case Enum.uniq(Enum.map(list, &get_type/1)) do
+        [n | []] -> n
+        _ -> :mixed
+      end
+    end
+
+    def get_type(elem) when is_number(elem), do: :number
+    def get_type(elem) when is_binary(elem), do: :binary
+    def get_type(_elem), do: :other
 end
