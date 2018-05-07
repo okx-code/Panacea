@@ -117,8 +117,8 @@ defmodule Atoms do
         "+" -> fn
           a, b when is_binary(a) and is_number(b) -> String.duplicate(a, b)
           a, b when is_number(a) and is_binary(b) -> String.duplicate(b, a)
-          a, b when is_binary(a) and is_binary(b) -> a <> b
-          a, b when is_list(a) and is_list(b) -> [a ++ b]
+          a, b when is_binary(a) and is_binary(b) -> b <> a
+          a, b when is_list(a) and is_list(b) -> [b ++ a]
           a, b when is_number(a) and is_number(b) -> a + b
           a, b when is_list(a) and is_number(b) -> [Enum.map(a, &(&1 + b))]
           a, b when is_list(a) -> [[b] ++ a]
