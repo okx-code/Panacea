@@ -3,7 +3,7 @@ defmodule Main do
 
   def main(args) do
     cond do
-      length(args) >= 1 ->
+      length(args) > 0 ->
         functions = read_lines(File.read!(hd(args)))
         lines = read_lines(IO.read(:all))
         inputs = if length(lines) == 0, do: [], else: Stream.cycle(lines)
@@ -29,8 +29,8 @@ defmodule Main do
   def read_lines(x) do
     x
     |> String.split("\n")
-    |> Enum.reverse
-    |> tl
-    |> Enum.reverse
+    |> Enum.reverse()
+    |> tl()
+    |> Enum.reverse()
   end
 end

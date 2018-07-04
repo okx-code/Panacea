@@ -24,4 +24,6 @@ defmodule Maths do
   defp decomposition(n, k, acc) when n < k*k, do: Enum.reverse(acc, [n])
   defp decomposition(n, k, acc) when rem(n, k) == 0, do: decomposition(div(n, k), k, [k | acc])
   defp decomposition(n, k, acc), do: decomposition(n, k+1, acc)
+
+  def absolute(n), do: if n < 0, do: -n, else: n
 end

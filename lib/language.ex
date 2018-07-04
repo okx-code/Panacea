@@ -3,6 +3,7 @@ defmodule Atoms do
 
   def eval(stack, functions, index, inputs) do
     # debug(Enum.to_list(inputs), "inputs")
+    # TODO: list subtraction
 
     Enum.at(functions, index)
     |> String.replace(~r/\d{2}/, "\\0j")
@@ -65,14 +66,24 @@ defmodule Atoms do
         # substrings
         "R" when is_binary(top) -> &dextend_sequence/1
         "r" when is_binary(top) -> fn n -> [String.graphemes(n)] end
-        # reverse
-        "r" when is_list(top) -> fn a -> [Enum.reverse a] end
+        # TODO:
+        "r" when is_list(top) -> fn a -> a end
+
+        "b" -> fn
+          n when is_list(n) -> [Enum.reverse n]
+          n when is_integer(n) -> n |> Integer.to_string() |> String.reverse() |> String.to_integer()
+          n when is_binary(n) -> String.reverse(n)
+          n when is_float(n) -> n |> Float.to_string() |> String.reverse()
+        end
         # random
         "g" -> fn -> (if :rand.uniform(2) == 1, do: false, else: true) end
         # map
         "e" -> fn x -> [Enum.map(x, fn y -> hd(eval([y], functions, index + 1, inputs)) end)] end
         # any
-        "a" -> fn x -> Enum.any?(x, fn y -> hd(eval([y], functions, index + 1, inputs)) end) end
+        "a" -> fn
+          n when is_list(n) -> Enum.any?(n, fn y -> hd(eval([y], functions, index + 1, inputs)) end)
+          # TODO:
+        end
         # filter
         "f" -> fn x -> [Enum.filter(x, fn y -> hd(eval([y], functions, index + 1, inputs)) end)] end
         # nth that matches
@@ -92,7 +103,8 @@ defmodule Atoms do
         "s" -> fn
           n when is_list(n) -> Enum.sum(n)
           n when is_integer(n) -> n |> Integer.digits() |> Enum.sum()
-          n when is_binary(n) -> String.reverse(n)
+          # TODO:
+          n when is_binary(n) -> n
         end
         # product
         "d" -> fn
@@ -107,6 +119,18 @@ defmodule Atoms do
         "=" -> fn a, b -> a==b end
         ":" -> fn a, b -> a===b end
         ";" -> fn a, b -> a&&b end
+
+        # absolute # TODO: binary
+        "l" -> fn
+          n when is_number(n) -> Maths.absolute(n)
+          n when is_binary(n) -> String.reverse(n) == n
+          n when is_list(n) ->
+            [case list_type(n) do
+              :number -> Enum.map(n, &Maths.absolute/1)
+              :binary -> Enum.map(n, &(String.reverse(&1) == &1))
+            end]
+        end
+
         # sqrt
         "q" -> fn
           n when is_number(n) -> :math.sqrt(n)
@@ -118,7 +142,9 @@ defmodule Atoms do
           a, b when is_binary(a) and is_number(b) -> String.duplicate(a, b)
           a, b when is_number(a) and is_binary(b) -> String.duplicate(b, a)
           a, b when is_binary(a) and is_binary(b) -> b <> a
-          a, b when is_list(a) and is_list(b) -> [b ++ a]
+          a, b when is_list(a) and is_list(b) ->
+            [Enum.zip(a, b)
+            |> Enum.map(fn {x, y} -> x + y end)]
           a, b when is_number(a) and is_number(b) -> a + b
           a, b when is_list(a) and is_number(b) -> [Enum.map(a, &(&1 + b))]
           a, b when is_list(a) -> [[b] ++ a]
@@ -128,7 +154,9 @@ defmodule Atoms do
         # subtract
         "-" -> fn
           a, b when is_number(a) and is_number(b) -> a - b
-          a, b when is_list(a) and is_list(b) -> [a -- b]
+          a, b when is_list(a) and is_list(b) ->
+            [Enum.zip(a, b)
+            |> Enum.map(fn {x, y} -> x - y end)]
           a, b when is_list(a) and is_number(b) -> [Enum.map(a, &(&1 - b))]
           a, b when is_number(a) and is_list(b) -> [Enum.map(b, &(a - &1))]
         end
@@ -168,9 +196,18 @@ defmodule Atoms do
         # prime
         "m" -> fn
           n when is_number(n) -> length(Maths.divisors(n)) == 1
+          n when is_binary(n) -> String.length(n)
+          n when is_list(n) -> [Enum.min(n, fn -> 0 end)]
         end
         "z" -> fn
           n when is_number(n) -> [Maths.decomposition(n)]
+          n when is_list(n) -> [Enum.max(n, fn -> 0 end)]
+        end
+
+        # index access
+        "@" -> fn
+          a, b when is_list(a) and is_integer(b) -> [Enum.at(a, b)]
+          a, b when is_integer(a) and is_list(b) -> [Enum.at(b, a)]
         end
 
         "{" -> fn
@@ -178,7 +215,7 @@ defmodule Atoms do
           n when is_binary(n) -> rem(String.length(n), 2) == 0
           n when is_list(n) -> rem(length(n), 2) == 0
         end
-        "}" when is_number(top) -> fn
+        "}" -> fn
           n when is_number(n) -> rem(n, 2) == 1
           n when is_binary(n) -> rem(String.length(n), 2) == 1
           n when is_list(n) -> rem(length(n), 2) == 1
@@ -192,6 +229,7 @@ defmodule Atoms do
           a, b when is_number(a) and is_number(b) -> b * 10 + a
           a, b when is_list(a) and is_number(b) -> [List.duplicate(a, b)]
           a, b when is_number(a) and is_list(b) -> [List.duplicate(b, a)]
+          a, b when is_list(a) and is_list(b) -> [a ++ b]
          end
         # convert (str -> int) or (int -> str)
         "i" when is_binary(top) -> fn n ->
@@ -213,7 +251,7 @@ defmodule Atoms do
         end
         "[" -> fn -> [convert(Enum.at(inputs, 0))] end
         "]" -> fn -> [convert(Enum.at(inputs, 1))] end
-        "E" when is_binary(top) -> fn s -> case Code.eval_string(s, __ENV__) do {v, _} -> v end end
+        "E" when is_binary(top) -> fn s -> case Code.eval_string(s) do {v, _} -> v end end
         " " -> fn -> [] end
       end)
     end)
