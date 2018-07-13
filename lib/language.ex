@@ -78,11 +78,14 @@ defmodule Atoms do
         # random
         "g" -> fn -> (if :rand.uniform(2) == 1, do: false, else: true) end
         # map
-        "e" -> fn x -> [Enum.map(x, fn y -> hd(eval([y], functions, index + 1, inputs)) end)] end
+        "e" -> fn
+          n when is_list(n) -> [Enum.map(n, fn y -> hd(eval([y], functions, index + 1, inputs)) end)]
+          n when is_float(n) -> round(if Float.ceil(n) == Float.floor(n), do: n + 1, else: Float.ceil(n))
+        end
         # any
         "a" -> fn
           n when is_list(n) -> Enum.any?(n, fn y -> hd(eval([y], functions, index + 1, inputs)) end)
-          # TODO:
+          n when is_float(n) -> round(if Float.ceil(n) == Float.floor(n), do: n - 1, else: Float.floor(n))
         end
         # filter
         "f" -> fn x -> [Enum.filter(x, fn y -> hd(eval([y], functions, index + 1, inputs)) end)] end
@@ -202,6 +205,11 @@ defmodule Atoms do
         "z" -> fn
           n when is_number(n) -> [Maths.decomposition(n)]
           n when is_list(n) -> [Enum.max(n, fn -> 0 end)]
+        end
+
+        "k" -> fn
+          n when is_integer(n) -> Integer.digits(n)
+          n when is_list(n) -> Integer.undigits(n)
         end
 
         # index access
